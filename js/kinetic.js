@@ -3,6 +3,7 @@ class Kinetic {
 		this.fps = fps;
 		this.friction = 0.98
 		this.momentum = 0.70;
+		this.borders = false;
 
 		this.touchTarget = this.kineticTarget  = document.querySelector(target);
 
@@ -86,39 +87,69 @@ class Kinetic {
 		}
 		self.clickedUp = true;
 
-		self.getMotionFrames(self.momentumX, self.momentumY);
-		self.startAnim(0);
+		self.startAnim();
 
 		event.preventDefault();
 		return false;
 	}
-	getMotionFrames(X,Y){
-		this.motionFrames = [];
-		this.motionFrames["X"]=[];
-		this.motionFrames["Y"]=[];
-		this.motionFrames["X"][0]=X;
-		this.motionFrames["Y"][0]=Y;
+	startAnim(){
+		if (this.borderX || this.borderY) {
+			this.checkBorders();
+		}
+		if(Math.abs( Math.sqrt(Math.pow(this.momentumX, 2)+Math.pow(this.momentumY, 2)))>=0.1){
+			this.kineticTarget.style.left = this.kineticTarget.getBoundingClientRect().left + this.momentumX+ "px";
+			this.kineticTarget.style.top = this.kineticTarget.getBoundingClientRect().top + this.momentumY + "px";
+			this.momentumX*=this.friction;
+			this.momentumY*=this.friction;
 
-		var hypotenuse = Math.sqrt(Math.pow(X, 2)+Math.pow(Y, 2));
-		var angleRadians = Math.atan2(Y, X);
-		do{
-			hypotenuse*=this.friction;
-
-			this.motionFrames["X"][this.motionFrames["X"].length]=Math.cos(angleRadians) * hypotenuse;
-			this.motionFrames["Y"][this.motionFrames["Y"].length]=Math.sin(angleRadians) * hypotenuse;
-		}while(hypotenuse>=0.1);
-	}
-	startAnim(index){
-		if(index<this.motionFrames["X"].length){
-			this.kineticTarget.style.left = this.kineticTarget.getBoundingClientRect().left + this.motionFrames["X"][index]+ "px";
-			this.kineticTarget.style.top = this.kineticTarget.getBoundingClientRect().top + this.motionFrames["Y"][index] + "px";
 			this.ball3D();
 
 			var self = this;
 			window["timeOut"+this.kineticTarget.id] = setTimeout(function(){
-				self.startAnim(index +1);
+				self.startAnim();
 			}, 1000/this.fps);
 		}
+	}
+	setBordersParent(which){
+		switch (which) {
+			case "both":
+				this.borderX = true;
+				this.borderY = true;
+				break;
+			case "X":
+				this.borderX = true;
+				this.borderY = false;
+				break;
+			case "Y":
+				this.borderX = false;
+				this.borderY = true;
+				break;
+			default:
+				this.borderX = false;
+				this.borderY = false;
+		}
+		var parent = this.kineticTarget.parentElement;
+		this.borderXstart = 0;
+		this.borderXend = parent.nodeName =="BODY"?window.innerWidth - this.kineticTarget.getBoundingClientRect().width:parent.clientWidth - this.kineticTarget.getBoundingClientRect().width;
+		this.borderYstart = 0;
+		this.borderYend = parent.nodeName =="BODY"?window.innerHeight - this.kineticTarget.getBoundingClientRect().height:parent.clientHeight - this.kineticTarget.getBoundingClientRect().height;
+		// this.log(this.borderXend);
+	}
+	checkBorders(){
+		var left = this.kineticTarget.getBoundingClientRect().left+this.momentumX;
+		var top = this.kineticTarget.getBoundingClientRect().top+this.momentumY;
+		if(this.borderX && (left<this.borderXstart || left>this.borderXend)){
+			this.momentumX*=-1;
+		}
+
+		if(this.borderY && (top<this.borderYstart || top>this.borderYend)){
+			this.momentumY*=-1;
+		}
+		this.log(left +" | "+this.borderXend)
+
+	}
+	setNewKineticTarget(target){
+		this.kineticTarget  = document.querySelector(target);
 	}
 	addLine(height){
 		var line = document.createElement("div");
@@ -134,9 +165,6 @@ class Kinetic {
 		var opt = document.createElement("option");
 		opt.text = value;
 		document.getElementById("log").appendChild(opt);
-	}
-	setNewKineticTarget(target){
-		this.kineticTarget  = document.querySelector(target);
 	}
 	ball3D(){
 		var w = window.innerWidth
