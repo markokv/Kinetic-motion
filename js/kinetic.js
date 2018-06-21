@@ -153,6 +153,10 @@ class Kinetic {
 		var posL = (w-left)/w*100;
 		var posT = (h-top)/h*100;
 
+
+		this.kineticTarget.style.background = "-webkit-radial-gradient("+Math.trunc(posL)+"% "+Math.trunc(posT)+"%, circle, white 1px, aqua 3%, darkblue 60%, aqua 100%)";
+		this.kineticTarget.style.background = "-moz-radial-gradient("+Math.trunc(posL)+"% "+Math.trunc(posT)+"%, circle, white 1px, aqua 3%, darkblue 60%, aqua 100%)";
+		this.kineticTarget.style.background = "-o-radial-gradient("+Math.trunc(posL)+"% "+Math.trunc(posT)+"%, circle, white 1px, aqua 3%, darkblue 60%, aqua 100%)";
 		this.kineticTarget.style.background = "radial-gradient(circle at "+Math.trunc(posL)+"% "+Math.trunc(posT)+"%, white 2px, aqua 3%, darkblue 60%, aqua 100%)";
 	}
 }
